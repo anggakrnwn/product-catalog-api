@@ -1,8 +1,8 @@
 package config
 
 import (
+	"log"
 	"os"
-	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -14,29 +14,30 @@ type Config struct {
 }
 
 func Load() Config {
-
 	viper.AutomaticEnv()
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	viper.BindEnv("PORT")
+	viper.BindEnv("ENVIRONMENT")
+	viper.BindEnv("DB_CONN")
 
 	if _, err := os.Stat(".env"); err == nil {
 		viper.SetConfigFile(".env")
 		_ = viper.ReadInConfig()
 	}
 
-	// set defaults
-	viper.SetDefault("PORT", "8080")
-	viper.SetDefault("ENVIRONMENT", "development")
+	port := viper.GetString("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
-	// config struct
 	config := Config{
-		Port:        viper.GetString("PORT"),
+		Port:        port,
 		Environment: viper.GetString("ENVIRONMENT"),
 		DBConn:      viper.GetString("DB_CONN"),
 	}
 
-	// validasi
 	if config.DBConn == "" {
-		panic("DB_CONN is required in environment variables")
+		log.Println("Warning: DB_CONN is empty")
 	}
 
 	return config
