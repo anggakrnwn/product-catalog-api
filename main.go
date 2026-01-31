@@ -99,7 +99,7 @@ func main() {
 
 	// start server
 	addr := "0.0.0.0:" + cfg.Port
-	log.Printf("Server starting on http://0.0.0.0%s", addr)
+	log.Printf("Server starting on port %s", cfg.Port)
 	log.Printf("Environment: %s", cfg.Environment)
 
 	if err := http.ListenAndServe(addr, nil); err != nil {
