@@ -57,33 +57,6 @@ func (h *ProductHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	includeCategory := r.URL.Query().Get("include") == "category"
-
-	if includeCategory {
-		h.GetWithCategory(w, r, id)
-		return
-	}
-
-	product, err := h.service.GetByID(id)
-	if err != nil {
-		status := http.StatusInternalServerError
-		if strings.Contains(err.Error(), "not found") {
-			status = http.StatusNotFound
-		}
-		http.Error(w, err.Error(), status)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true,
-		"data":    product,
-	})
-}
-
-// join
-func (h *ProductHandler) GetWithCategory(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
-
 	product, err := h.service.GetWithCategory(id)
 	if err != nil {
 		status := http.StatusInternalServerError

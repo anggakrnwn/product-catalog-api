@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"strings"
 
@@ -30,10 +31,25 @@ func NewProductRepository(db *sql.DB) ProductRepository {
 func (r *productRepository) GetAll() ([]models.Product, error) {
 
 	query := `
-		SELECT id, name, price, stock, category_id, created_at, updated_at 
-		FROM products 
-		ORDER BY name
-	`
+        SELECT 
+            p.id, 
+            p.name, 
+            p.price, 
+            p.stock, 
+            p.category_id, 
+            p.created_at, 
+            p.updated_at,
+            json_build_object(
+                'id', c.id,
+                'name', c.name,
+                'description', c.description,
+                'created_at', c.created_at,
+                'updated_at', c.updated_at
+            ) as category
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        ORDER BY p.name
+    `
 
 	rows, err := r.db.Query(query)
 	if err != nil {
@@ -44,13 +60,24 @@ func (r *productRepository) GetAll() ([]models.Product, error) {
 	var products []models.Product
 	for rows.Next() {
 		var p models.Product
+		var categoryData []byte
+
 		err := rows.Scan(
 			&p.ID, &p.Name, &p.Price, &p.Stock,
 			&p.CategoryID, &p.CreatedAt, &p.UpdatedAt,
+			&categoryData,
 		)
 		if err != nil {
 			return nil, err
 		}
+
+		if len(categoryData) > 0 && string(categoryData) != "null" {
+			var category models.Category
+			if err := json.Unmarshal(categoryData, &category); err == nil {
+				p.Category = &category
+			}
+		}
+
 		products = append(products, p)
 	}
 
