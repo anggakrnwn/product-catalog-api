@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"net"
 	"net/http"
 	"time"
 
@@ -98,9 +99,14 @@ func main() {
 	http.HandleFunc("/api/health", healthHandler)
 
 	// start server
-	addr := ":" + cfg.Port
+	addr := "0.0.0.0:" + cfg.Port
 	log.Printf("Server starting on port %s", cfg.Port)
 	log.Printf("Environment: %s", cfg.Environment)
+	listener, err := net.Listen("tcp4", addr)
+	if err != nil {
+		log.Fatal("Failed to listen:", err)
+	}
+	defer listener.Close()
 
 	if err := http.ListenAndServe(addr, nil); err != nil {
 		log.Fatal("Failed to start server:", err)
