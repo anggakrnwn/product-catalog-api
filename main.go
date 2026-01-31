@@ -98,7 +98,7 @@ func main() {
 	http.HandleFunc("/api/health", healthHandler)
 
 	// start server
-	addr := ":" + cfg.Port
+	addr := "0.0.0.0:" + cfg.Port
 	log.Printf("Server starting on http://localhost%s", addr)
 	log.Printf("Environment: %s", cfg.Environment)
 
